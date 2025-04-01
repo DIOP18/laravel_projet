@@ -30,6 +30,14 @@ Route::middleware('auth')->group(function () {
         Route::get('/ajoutLivre', [LivreController::class, 'create'])->name('ajoutLivre');
     Route::post('/saveLivre', [LivreController::class, 'store'])->name('saveLivre');
     Route::get('/editLivre/{id}', [LivreController::class, 'edit'])->name('editLivre');
+    Route::put('/updateLivre/{id}', [LivreController::class, 'update'])->name('updateLivre');
+    Route::delete('/deleteLivre/{id}', [LivreController::class, 'destroy'])->name('deleteLivre');
+    Route::patch('/archiveLivre/{id}', [LivreController::class, 'archive'])->name('archiveLivre');
+    Route::patch('/unarchiveLivre/{id}', [LivreController::class, 'unarchive'])->name('unarchiveLivre');
+    Route::get('/catalogue', [LivreController::class, 'catalogue'])->name('catalogue');
+    Route::get('/showDetails/{id}', [LivreController::class, 'showDetails'])->name('showDetails');
+
+
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');

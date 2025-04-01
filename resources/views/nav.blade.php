@@ -20,7 +20,7 @@
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link text-white d-flex align-items-center mx-2 fw-semibold" href="{{ url('') }}">
+                    <a class="nav-link text-white d-flex align-items-center mx-2 fw-semibold" href="{{ url('/catalogue') }}">
                         <i class="fas fa-list me-2"></i> Catalogues
                     </a>
                 </li>

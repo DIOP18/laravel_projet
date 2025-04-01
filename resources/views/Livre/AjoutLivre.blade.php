@@ -113,6 +113,17 @@
                     </div>
                     @enderror
                 </div>
+                <div>
+                    <label for="categorie" class="form-label">Categorie</label>
+                    <input type="text" class="form-control @error('categorie') is-invalid @enderror" id="categorie"
+                           name="categorie" value="{{$livre->categorie ? $livre->categorie : old('categorie')}}">
+                    @error('categorie')
+                    <div class="invalid-feedback">
+                        {{$message}}
+                    </div>
+                    @enderror
+
+                </div>
 
                 <div class="mb-3">
                     <label for="Stockdisponible" class="form-label">Stock Disponible</label>

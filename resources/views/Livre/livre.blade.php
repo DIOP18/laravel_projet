@@ -132,6 +132,13 @@
             white-space: nowrap;
         }
 
+        .category-cell {
+            max-width: 150px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
         .action-buttons {
             display: flex;
             gap: 5px;
@@ -152,9 +159,27 @@
             </div>
         </div>
         <div class="card-body">
+            @if(session("archive"))
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    <i class="fas fa-check-circle me-2"></i>{{session("archive")}}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            @endif
             @if(session("success"))
                 <div class="alert alert-success alert-dismissible fade show" role="alert">
                     <i class="fas fa-check-circle me-2"></i>{{session("success")}}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            @endif
+            @if(session("modification"))
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    <i class="fas fa-check-circle me-2"></i>{{session("modification")}}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            @endif
+            @if(session("Suppression"))
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    <i class="fas fa-check-circle me-2"></i>{{session("Suppression")}}
                     <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                 </div>
             @endif
@@ -168,6 +193,7 @@
                         <th scope="col"><i class="fas fa-user-edit me-1"></i> Auteur</th>
                         <th scope="col"><i class="fas fa-tag me-1"></i> Prix</th>
                         <th scope="col"><i class="fas fa-align-left me-1"></i> Description</th>
+                        <th scope="col"><i class="fas fa-folder me-1"></i> Catégorie</th>
                         <th scope="col"><i class="fas fa-cubes me-1"></i> Stock</th>
                         <th scope="col"><i class="fas fa-cogs me-1"></i> Actions</th>
                     </tr>
@@ -184,8 +210,9 @@
                             </td>
                             <td class="fw-bold">{{$l->titre}}</td>
                             <td>{{$l->auteur}}</td>
-                            <td>{{number_format($l->prix, 2)}} €</td>
+                            <td>{{number_format($l->prix,0)}}</td>
                             <td class="description-cell" title="{{$l->description}}">{{$l->description}}</td>
+                            <td class="category-cell" title="{{$l->categorie}}">{{$l->categorie}}</td>
                             <td>
                                 @if($l->Stockdisponible > 10)
                                     <span class="stock-badge stock-high">{{$l->Stockdisponible}}</span>
@@ -197,12 +224,33 @@
                             </td>
                             <td>
                                 <div class="action-buttons">
-                                    <a class="btn btn-primary btn-sm" href="{{route('editLivre',$livre)}}" title="Modifier">
+                                    <a class="btn btn-primary btn-sm" href="{{ route('editLivre', $l->id) }}" title="Modifier">
                                         <i class="fas fa-edit"></i>
                                     </a>
-                                    <a class="btn btn-danger btn-sm" href="#" title="Supprimer">
-                                        <i class="fas fa-trash"></i>
-                                    </a>
+                                    <form action="{{ route('deleteLivre', $l->id) }}" method="POST" class="d-inline">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="btn btn-danger btn-sm" title="Supprimer">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </form>
+                                    @if($l->archived)
+                                        <form action="{{ route('unarchiveLivre', $l->id) }}" method="POST" class="d-inline">
+                                            @csrf
+                                            @method('PATCH')
+                                            <button type="submit" class="btn btn-success btn-sm" title="Désarchiver">
+                                                <i class="fas fa-box-open"></i>
+                                            </button>
+                                        </form>
+                                    @else
+                                        <form action="{{ route('archiveLivre', $l->id) }}" method="POST" class="d-inline">
+                                            @csrf
+                                            @method('PATCH')
+                                            <button type="submit" class="btn btn-warning btn-sm" title="Archiver">
+                                                <i class="fas fa-archive"></i>
+                                            </button>
+                                        </form>
+                                    @endif
                                 </div>
                             </td>
                         </tr>

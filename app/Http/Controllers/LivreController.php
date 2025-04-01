@@ -37,6 +37,7 @@ class LivreController extends Controller
             'prix' => 'required|numeric|min:0',
 
             'description' => 'required',
+            'categorie' => 'required',
             'Stockdisponible' => 'required|numeric|min:0',
             'image' => 'required|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
         ]);
@@ -57,6 +58,7 @@ class LivreController extends Controller
         $livre->auteur = $request['auteur'];
         $livre->prix = $request['prix'];
         $livre->description = $request['description'];
+        $livre->categorie = $request['categorie'];
         $livre->Stockdisponible = $request['Stockdisponible'];
         $livre->save();
 
@@ -77,7 +79,7 @@ class LivreController extends Controller
      */
     public function edit(string $id)
     {
-        $livre = LivreModel::find($id);
+        $livre = LivreModel::findOrFail($id);
         return view('Livre.AjoutLivre', compact('livre'));
     }
 
@@ -86,7 +88,38 @@ class LivreController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        //
+        $request->validate([
+            'titre' => 'required',
+            'auteur' => 'required',
+            'prix' => 'required|numeric|min:0',
+            'description' => 'required',
+            'categorie' => 'required',
+            'Stockdisponible' => 'required|numeric|min:0',
+            'image' => 'sometimes|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+        ]);
+
+        $livre = LivreModel::findOrFail($id);
+        if ($request->hasFile('image')) {
+            // Supprimer l'ancienne image si elle existe
+            if ($livre->image && file_exists(public_path('storage/' . $livre->image))) {
+                unlink(public_path('storage/' . $livre->image));
+            }
+
+            $image = $request->file('image');
+            $imageName = time() . '.' . $image->getClientOriginalExtension();
+            $image->move(public_path('storage'), $imageName);
+            $livre->image = $imageName;
+        }
+        $livre->titre = $request->titre;
+        $livre->auteur = $request->auteur;
+        $livre->prix = $request->prix;
+        $livre->description = $request->description;
+        $livre->categorie = $request->categorie;
+        $livre->Stockdisponible = $request->Stockdisponible;
+
+        $livre->save();
+        return redirect('/livre')->with("modification", "Vous avez modifier ce livre");
+
     }
 
     /**
@@ -94,6 +127,66 @@ class LivreController extends Controller
      */
     public function destroy(string $id)
     {
+        $livre = LivreModel::findOrFail($id);
+
+        if ($livre->image && file_exists(public_path('storage/' . $livre->image))) {
+            unlink(public_path('storage/' . $livre->image));
+        }
+
+        $livre->delete();
+        return redirect('/livre')->with("Suppression", "Vous avez supprimer ce livre");
+
         //
     }
+    public function unarchive($id)
+    {
+        $livre = LivreModel::findOrFail($id);
+        $livre->archived = false;
+        $livre->save();
+
+        return redirect('/livre')->with("archive", "Livre désarchivé avec succès");
+    }
+    public function archive($id)
+    {
+        $livre = LivreModel::findOrFail($id);
+        $livre->archived = true;
+        $livre->save();
+
+        return redirect('/livre')->with("archive", "Livre archivé avec succès");
+    }
+
+    public function catalogue(Request $request)
+    {
+        $query = LivreModel::query();
+
+        // Filtres
+        if ($request->filled('auteur')) {
+            $query->where('auteur', 'like', '%'.$request->auteur.'%');
+        }
+
+        if ($request->filled('categorie')) {
+            $query->where('categorie', $request->categorie);
+        }
+
+        if ($request->filled('prix_min')) {
+            $query->where('prix', '>=', $request->prix_min);
+        }
+
+        if ($request->filled('prix_max')) {
+            $query->where('prix', '<=', $request->prix_max);
+        }
+
+        $livres = $query->paginate(12);
+        $categories = LivreModel::distinct()->pluck('categorie');
+
+        return view('Catalogues.catalogue', compact('livres', 'categories'));
+    }
+
+    public function showDetails($id)
+    {
+        $livre = LivreModel::findOrFail($id);
+        return view('Catalogues.livre-details', compact('livre'));
+    }
+
+
 }
