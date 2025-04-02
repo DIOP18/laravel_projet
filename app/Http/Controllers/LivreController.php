@@ -157,7 +157,7 @@ class LivreController extends Controller
 
     public function catalogue(Request $request)
     {
-        $query = LivreModel::query();
+        $query = LivreModel::where('archived', false);
 
         // Filtres
         if ($request->filled('auteur')) {

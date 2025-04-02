@@ -27,12 +27,15 @@
     <div class="container py-5">
         <div class="row mb-4">
             <div class="col">
-                <h1 class="display-5 fw-bold text-primary">
-                    <i class="fas fa-book-open me-2"></i>Catalogue des Livres
-                </h1>
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h1 class="display-5 fw-bold text-primary">
+                        <i class="fas fa-book-open me-2"></i>Catalogue des Livres
+                    </h1>
+                    <a href="" class="btn btn-primary btn-lg">
+                        <i class="fas fa-clipboard-list me-2"></i>Mes Commandes
+                    </a>
+                </div>
                 <p class="text-muted lead">Découvrez notre sélection de livres et filtrez selon vos préférences</p>
-            </div>
-        </div>
 
         <!-- Filtres avec design amélioré -->
         <div class="card mb-5 border-0 shadow-sm">
@@ -74,7 +77,7 @@
                             <label class="form-label fw-semibold">Prix max</label>
                             <div class="input-group">
                                 <span class="input-group-text"><i class="fas fa-coins"></i></span>
-                                <input type="number" name="prix_max" class="form-control" placeholder="50000" value="{{ request('prix_max') }}">
+                                <input type="number" name="prix_max" class="form-control" placeholder="100,000" value="{{ request('prix_max') }}">
                             </div>
                         </div>
                         <div class="col-12 mt-4">
@@ -136,6 +139,8 @@
         </div>
     </div>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+        </div>
+    </div>
 
     </body>
 

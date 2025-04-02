@@ -36,6 +36,8 @@ Route::middleware('auth')->group(function () {
     Route::patch('/unarchiveLivre/{id}', [LivreController::class, 'unarchive'])->name('unarchiveLivre');
     Route::get('/catalogue', [LivreController::class, 'catalogue'])->name('catalogue');
     Route::get('/showDetails/{id}', [LivreController::class, 'showDetails'])->name('showDetails');
+    Route::post('/commande', [\App\Http\Controllers\CommandeController::class, 'store'])->name('commande');
+
 
 
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');

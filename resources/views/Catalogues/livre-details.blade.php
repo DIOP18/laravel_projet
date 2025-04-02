@@ -24,6 +24,19 @@
     </style>
 </head>
 <body>
+@if(session("error"))
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <i class="fas fa-check-circle me-2"></i>{{session("error")}}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+@endif
+@if(session("success"))
+    <div class="alert alert-primary alert-dismissible fade show" role="alert">
+        <i class="fas fa-check-circle me-2"></i>{{session("success")}}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+@endif
+
 <div class="container py-5">
     <div class="row">
         <div class="col-md-4">
@@ -59,6 +72,45 @@
         </div>
     </div>
 </div>
+
+<div class="modal fade" id="commandeModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form id="commandeForm" method="POST" action="{{ route('commande') }}">
+                @csrf
+                <input type="hidden" name="livre_id" value="{{ $livre->id }}">
+                <div class="modal-header">
+                    <h5 class="modal-title">Commander "{{ $livre->titre }}"</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Quantité</label>
+                        <input type="number" name="quantite" class="form-control" min="1" value="1" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Votre email</label>
+                        <input type="email" name="email" class="form-control" required>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                    <button type="submit" class="btn btn-primary">Confirmer la commande</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const commanderBtn = document.querySelector('.commander-btn');
+        commanderBtn.addEventListener('click', function() {
+            const modal = new bootstrap.Modal(document.getElementById('commandeModal'));
+            modal.show();
+        });
+    });
+</script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
 </body>
