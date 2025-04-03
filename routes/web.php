@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\CommandeController;
 use App\Http\Controllers\LivreController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
@@ -24,27 +25,34 @@ Route::get('/dashboard', function () {
 
 })->middleware(['auth', 'verified'])->name('dashboard');
 
-Route::middleware('auth')->group(function () {
-    //LES ROUTES DE TON APPLICATION
+Route::middleware(['auth', 'role:gestionnaire'])->group(function () {
+
     Route::get('/livre', [LivreController::class, 'index']);
-        Route::get('/ajoutLivre', [LivreController::class, 'create'])->name('ajoutLivre');
+    Route::get('/ajoutLivre', [LivreController::class, 'create'])->name('ajoutLivre');
     Route::post('/saveLivre', [LivreController::class, 'store'])->name('saveLivre');
     Route::get('/editLivre/{id}', [LivreController::class, 'edit'])->name('editLivre');
     Route::put('/updateLivre/{id}', [LivreController::class, 'update'])->name('updateLivre');
     Route::delete('/deleteLivre/{id}', [LivreController::class, 'destroy'])->name('deleteLivre');
     Route::patch('/archiveLivre/{id}', [LivreController::class, 'archive'])->name('archiveLivre');
     Route::patch('/unarchiveLivre/{id}', [LivreController::class, 'unarchive'])->name('unarchiveLivre');
+    Route::get('/index',[CommandeController::class,'index'])->name('index');
+    Route::get('/DetailsCommande/{id}',[CommandeController::class,'show'])->name('DetailsCommande');
+    Route::post('/annuler/{id}',[CommandeController::class,'cancel'])->name('annuler');
+    });
+Route::middleware(['auth', 'role:client'])->group(function () {
     Route::get('/catalogue', [LivreController::class, 'catalogue'])->name('catalogue');
     Route::get('/showDetails/{id}', [LivreController::class, 'showDetails'])->name('showDetails');
     Route::post('/commande', [\App\Http\Controllers\CommandeController::class, 'store'])->name('commande');
+    Route::get('/mescommandes', [CommandeController::class, 'mesCommandes'])->name('mescommandes');
 
+});
 
-
+Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
-//LES ROUTES DE TON APPLICATION
+
 
 require __DIR__.'/auth.php';

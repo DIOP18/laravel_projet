@@ -8,8 +8,10 @@ use Illuminate\Database\Eloquent\Model;
 class LivreModel extends Model
 {
     use HasFactory;
+    protected $table = 'livre_models'; // Définir le bon nom de table
 
-    public static function find(string $id)
+    public function commandes()
     {
+        return $this->hasMany(Commande::class, 'livre_id');
     }
 }

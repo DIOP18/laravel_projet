@@ -31,7 +31,7 @@
                     <h1 class="display-5 fw-bold text-primary">
                         <i class="fas fa-book-open me-2"></i>Catalogue des Livres
                     </h1>
-                    <a href="" class="btn btn-primary btn-lg">
+                    <a href="{{route('mescommandes')}}" class="btn btn-primary btn-lg">
                         <i class="fas fa-clipboard-list me-2"></i>Mes Commandes
                     </a>
                 </div>
@@ -77,7 +77,7 @@
                             <label class="form-label fw-semibold">Prix max</label>
                             <div class="input-group">
                                 <span class="input-group-text"><i class="fas fa-coins"></i></span>
-                                <input type="number" name="prix_max" class="form-control" placeholder="100,000" value="{{ request('prix_max') }}">
+                                <input type="number" name="prix_max" class="form-control" placeholder="1,000,000" value="{{ request('prix_max') }}">
                             </div>
                         </div>
                         <div class="col-12 mt-4">
@@ -95,7 +95,7 @@
             </div>
         </div>
 
-        <!-- Liste des livres avec design moderne -->
+
         <div class="row">
             @foreach($livres as $livre)
                 <div class="col-lg-4 col-md-6 mb-4">

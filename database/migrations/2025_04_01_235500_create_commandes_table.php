@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('commandes', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('livre_id')->constrained()->onDelete('cascade');
+            $table->foreign('livre_id')->references('id')->on('livre_models')->onDelete('cascade');
             $table->integer('quantite');
             $table->decimal('total', 10, 2);
             $table->string('email');

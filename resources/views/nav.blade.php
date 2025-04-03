@@ -9,26 +9,42 @@
 
         <div class="collapse navbar-collapse" id="navbarSupportedContent">
             <ul class="navbar-nav ms-auto">
-                <li class="nav-item">
-                    <a class="nav-link text-white d-flex align-items-center mx-2 fw-semibold" href="{{ url('/livre') }}">
-                        <i class="fas fa-book me-2"></i> Gestion des Produits
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link text-white d-flex align-items-center mx-2 fw-semibold" href="{{ url('') }}">
-                        <i class="fas fa-shopping-cart me-2"></i> Gestion des Commandes
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link text-white d-flex align-items-center mx-2 fw-semibold" href="{{ url('/catalogue') }}">
-                        <i class="fas fa-list me-2"></i> Catalogues
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link text-white d-flex align-items-center mx-2 fw-semibold" href="{{ url('') }}">
-                        <i class="fas fa-chart-bar me-2"></i> Statistiques et Rapports
-                    </a>
-                </li>
+                @if(Auth::user()->role == 'client')
+                    <li class="nav-item">
+                        <a class="nav-link text-white d-flex align-items-center mx-2 fw-semibold" href="{{ url('/catalogue') }}">
+                            <i class="fas fa-list me-2"></i> Catalogues
+                        </a>
+                    </li>
+                @endif
+                @if(Auth::user()->role == 'gestionnaire')
+                    <li class="nav-item">
+
+                        <a class="nav-link text-white d-flex align-items-center mx-2 fw-semibold" href="{{ url('/livre') }}">
+                            <i class="fas fa-book me-2"></i> Gestion des Produits
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link text-white d-flex align-items-center mx-2 fw-semibold" href="{{ url('/index') }}">
+                            <i class="fas fa-shopping-cart me-2"></i> Gestion des Commandes
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link text-white d-flex align-items-center mx-2 fw-semibold" href="{{ url('') }}">
+                            <i class="fas fa-chart-bar me-2"></i> Statistiques et Rapportss
+                        </a>
+                    </li>
+                @endif
+                    <li class="nav-item">
+                        <form method="POST" action="{{ route('logout') }}">
+                            @csrf
+                            <button type="submit" class="nav-link text-danger d-flex align-items-center mx-2 fw-semibold" style="border: none; background: none; cursor: pointer;">
+                                <i class="fas fa-window-close me-2"></i> Se Déconnecter
+                            </button>
+                        </form>
+                    </li>
+
+
+
             </ul>
         </div>
     </div>
