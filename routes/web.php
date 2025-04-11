@@ -38,13 +38,14 @@ Route::middleware(['auth', 'role:gestionnaire'])->group(function () {
     Route::get('/index',[CommandeController::class,'index'])->name('index');
     Route::get('/DetailsCommande/{id}',[CommandeController::class,'show'])->name('DetailsCommande');
     Route::post('/annuler/{id}',[CommandeController::class,'cancel'])->name('annuler');
+    Route::post('/expedier/{id}',[CommandeController::class,'expedier'])->name('expedier');
     });
 Route::middleware(['auth', 'role:client'])->group(function () {
     Route::get('/catalogue', [LivreController::class, 'catalogue'])->name('catalogue');
     Route::get('/showDetails/{id}', [LivreController::class, 'showDetails'])->name('showDetails');
     Route::post('/commande', [\App\Http\Controllers\CommandeController::class, 'store'])->name('commande');
     Route::get('/mescommandes', [CommandeController::class, 'mesCommandes'])->name('mescommandes');
-
+    Route::post('/paymentMethod', [CommandeController::class, 'PaiementCommandes'])->name('paymentMethod');
 });
 
 Route::middleware('auth')->group(function () {

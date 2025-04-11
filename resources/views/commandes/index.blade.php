@@ -191,19 +191,34 @@
                                     </span>
                                 </td>
                                 <td>{{ $commande->created_at->format('d/m/Y H:i') }}</td>
+
                                 <td>
-                                    <a href="{{ route('DetailsCommande', $commande->id) }}" class="btn btn-sm btn-info">
-                                        <i class="fas fa-eye"></i> Détails
-                                    </a>
-                                    @if($commande->statut != 'annulée')
-                                        <form action="{{ route('annuler', $commande->id) }}" method="POST" class="d-inline">
-                                            @csrf
-                                            <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Êtes-vous sûr de vouloir annuler cette commande?')">
-                                                <i class="fas fa-times"></i> Annuler
+                                    <div class="action-buttons">
+                                        <!-- Toujours visible -->
+                                        <a href="{{ route('DetailsCommande', $commande->id) }}" class="btn btn-sm btn-info">
+                                            <i class="fas fa-eye"></i> Détails
+                                        </a>
+
+                                        <!-- Visible seulement si en attente -->
+                                        @if($commande->statut === 'en_attente')
+                                            <form action="{{ route('annuler', $commande->id) }}" method="POST" class="d-inline">
+                                                @csrf
+                                                <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Êtes-vous sûr de vouloir annuler cette commande?')">
+                                                    <i class="fas fa-times"></i> Annuler
+                                                </button>
+                                            </form>
+                                        @elseif($commande->statut === 'payee')
+                                            <button class="btn btn-sm btn-secondary" disabled>
+                                                <i class="fas fa-check-circle"></i> Payée
                                             </button>
-                                        </form>
-                                    @endif
+                                        @elseif($commande->statut === 'annulée')
+                                            <button class="btn btn-sm btn-secondary" disabled>
+                                                <i class="fas fa-ban"></i> Annulée
+                                            </button>
+                                        @endif
+                                    </div>
                                 </td>
+
                             </tr>
                         @empty
                             <tr>

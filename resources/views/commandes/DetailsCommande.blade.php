@@ -30,11 +30,6 @@
             border-radius: 0.35rem 0.35rem 0 0;
         }
 
-        .table {
-            border-collapse: separate;
-            border-spacing: 0;
-        }
-
         .table thead th {
             background-color: #f8f9fc;
             border-top: none;
@@ -148,6 +143,12 @@
     <div class="container">
         <div class="row mb-4">
             <div class="col">
+                @if(session("livraison"))
+                    <div class="alert alert-primary alert-dismissible fade show" role="alert">
+                        <i class="fas fa-check-circle me-2"></i>{{session("livraison")}}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                @endif
                 <h1 class="display-5 fw-bold text-primary">
                     <i class="fas fa-clipboard-check me-2"></i>Détails de la commande #{{ $commande->id }}
                 </h1>
@@ -217,22 +218,32 @@
                         <h5 class="card-title mb-0">Actions</h5>
                     </div>
                     <div class="card-body">
-                        @if($commande->statut != 'annulée')
+                        @if($commande->statut === 'en_attente')
                             <form action="{{ route('annuler', $commande->id) }}" method="POST">
                                 @csrf
                                 <button type="submit" class="btn btn-danger w-100 mb-3" onclick="return confirm('Êtes-vous sûr de vouloir annuler cette commande?')">
                                     <i class="fas fa-times me-2"></i>Annuler la commande
                                 </button>
                             </form>
+                        @elseif($commande->statut === 'payee')
+                            <form action="{{ route('expedier', $commande->id) }}" method="POST">
+                                @csrf
+                                <button type="submit" class="btn btn-info w-100 mb-3">
+                                    <i class="fas fa-envelope me-2"></i>Expédier la commande
+                                </button>
+                            </form>
+                        @elseif($commande->statut === 'annulée')
+                            <div class="alert alert-danger mb-3">
+                                <i class="fas fa-ban me-2"></i>Commande annulée le {{ $commande->updated_at->format('d/m/Y H:i') }}
+                            </div>
                         @else
-                            <div class="alert alert-danger">
-                                Cette commande a été annulée le {{ $commande->updated_at->format('d/m/Y H:i') }}.
+                            <div class="alert alert-success mb-3">
+                                <i class="fas fa-envelope me-2"></i>COMMANDE EXPEDIEEEE
                             </div>
                         @endif
 
-                        <a href="mailto:{{ $commande->email }}" class="btn btn-info w-100">
-                            <i class="fas fa-envelope me-2"></i>Contacter le client
-                        </a>
+
+
                     </div>
                 </div>
             </div>

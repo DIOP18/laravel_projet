@@ -64,96 +64,23 @@
             transform: translateY(-1px);
         }
 
-        .btn-danger {
-            background-color: #e74a3b;
-            border-color: #e74a3b;
-            box-shadow: 0 0.125rem 0.25rem 0 rgba(58, 59, 69, 0.2);
-            transition: all 0.2s;
-        }
-
-        .btn-danger:hover {
-            background-color: #d52a1a;
-            border-color: #d52a1a;
-            transform: translateY(-1px);
-        }
-
-        .book-image {
-            height: 80px;
-            width: 60px;
-            object-fit: cover;
-            border-radius: 4px;
-            box-shadow: 0 0.125rem 0.25rem 0 rgba(58, 59, 69, 0.2);
-            transition: transform 0.3s;
-        }
-
-        .book-image:hover {
-            transform: scale(1.5);
-            z-index: 1000;
-        }
-
-        .pagination {
-            margin-top: 1.5rem;
-            justify-content: center;
-        }
-
-        .alert-success {
-            background-color: #1cc88a;
-            border-color: #169b6b;
-            color: white;
-        }
-
-        .stock-badge {
-            padding: 0.35em 0.65em;
-            font-size: 0.75em;
-            font-weight: 700;
-            border-radius: 0.25rem;
-        }
-
-        .stock-high {
-            background-color: #1cc88a;
-            color: white;
-        }
-
-        .stock-medium {
-            background-color: #f6c23e;
-            color: white;
-        }
-
-        .stock-low {
-            background-color: #e74a3b;
-            color: white;
-        }
-
-        .description-cell {
-            max-width: 200px;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-        }
-
-        .category-cell {
-            max-width: 150px;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-        }
-
-        .action-buttons {
-            display: flex;
-            gap: 5px;
-        }
     </style>
 </head>
 <body>
     <div class="container py-5">
         <div class="card shadow-sm">
             <div class="card-header bg-light py-3">
+                @if(session("paiement"))
+                    <div class="alert alert-primary alert-dismissible fade show" role="alert">
+                        <i class="fas fa-check-circle me-2"></i>{{session("paiement")}}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                @endif
                 <h3 class="mb-0">
                     <i class="fas fa-history me-2"></i>
                     Mes Commandes ({{ auth()->user()->name }})
                 </h3>
             </div>
-
             <div class="card-body">
                 @if($commandes->isEmpty())
                     <div class="text-center py-5">
@@ -174,7 +101,7 @@
                                 <th>Livre</th>
                                 <th>Statut</th>
                                 <th>Total</th>
-
+                                <th>Action</th>
                             </tr>
                             </thead>
                             <tbody>
@@ -199,6 +126,7 @@
                                         match($commande->statut) {
                                             'payee' => 'success',
                                             'annulee' => 'danger',
+                                            'expedie'=>'success',
                                             default => 'warning'
                                         }
                                     }}">
@@ -207,6 +135,17 @@
                                     </td>
                                     <td class="text-success fw-bold">
                                         {{ number_format($commande->total, 0) }} FCFA
+                                    </td>
+                                    <td>
+                                        @if($commande->statut == 'en_attente')
+                                            <button class="btn btn-success btn-sm pay-button" data-commande-id="{{ $commande->id }}">
+                                                <i class="fas fa-cash-register me-1"></i>payee
+                                            </button>
+                                        @else
+                                            <button class="btn btn-secondary btn-sm" disabled>
+                                                <i class="fas fa-check-circle me-1"></i>payee
+                                            </button>
+                                        @endif
                                     </td>
 
                                 </tr>
@@ -222,6 +161,126 @@
             </div>
         </div>
     </div>
+
+    <div class="modal fade" id="paymentModal" tabindex="-1" aria-labelledby="paymentModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title" id="paymentModalLabel"><i class="fas fa-credit-card me-2"></i>Choisir un mode de paiement</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="paymentForm" action="{{ route('paymentMethod') }}" method="POST">
+                        @csrf
+                        <input type="hidden" name="commande_id" id="commande_id" value="">
+
+                        <div class="mb-4">
+                            <label class="form-label fw-bold">Mode de paiement</label>
+                            <div class="payment-options">
+                                <div class="form-check payment-option border rounded p-3 mb-3">
+                                    <input class="form-check-input" type="radio" name="payment_method" id="espece" value="espece" checked>
+                                    <label class="form-check-label w-100" for="espece">
+                                        <div class="d-flex align-items-center">
+                                            <div class="payment-icon bg-success bg-opacity-10 p-2 rounded me-3">
+                                                <i class="fas fa-money-bill-wave text-success fa-2x"></i>
+                                            </div>
+                                            <div>
+                                                <h6 class="mb-1">Espèce (Prioritaire)</h6>
+                                                <small class="text-muted">Paiement en espèces lors de la livraison!</small>
+                                            </div>
+                                        </div>
+                                    </label>
+                                </div>
+
+                                <div class="form-check payment-option border rounded p-3">
+                                    <input class="form-check-input" type="radio" name="payment_method" id="carte" value="carte">
+                                    <label class="form-check-label w-100" for="carte">
+                                        <div class="d-flex align-items-center">
+                                            <div class="payment-icon bg-primary bg-opacity-10 p-2 rounded me-3">
+                                                <i class="fas fa-credit-card text-primary fa-2x"></i>
+                                            </div>
+                                            <div>
+                                                <h6 class="mb-1">Carte bancaire</h6>
+                                                <small class="text-muted">Paiement sécurisé par carte bancaire</small>
+                                            </div>
+                                        </div>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="modal-footer px-0 pb-0">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-check-circle me-2"></i>Confirmer le paiement
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Remplacez votre script existant par celui-ci -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Récupérer tous les boutons de paiement
+            const payButtons = document.querySelectorAll('.pay-button');
+
+            // Ajouter un événement de clic à chaque bouton
+            payButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    // Récupérer l'ID de la commande
+                    const commandeId = this.getAttribute('data-commande-id');
+
+                    // Mettre à jour l'ID de la commande dans le formulaire modal
+                    document.getElementById('commande_id').value = commandeId;
+                    console.log('ID de commande défini:', commandeId);
+
+                    // Afficher le modal
+                    const paymentModal = new bootstrap.Modal(document.getElementById('paymentModal'));
+                    paymentModal.show();
+                });
+            });
+
+            // Style supplémentaire pour les options de paiement
+            const paymentOptions = document.querySelectorAll('.payment-option');
+            paymentOptions.forEach(option => {
+                const radio = option.querySelector('input[type="radio"]');
+
+                // Ajouter une classe lorsque l'option est sélectionnée
+                radio.addEventListener('change', function() {
+                    paymentOptions.forEach(opt => {
+                        opt.classList.remove('border-primary');
+                    });
+
+                    if (this.checked) {
+                        option.classList.add('border-primary');
+                    }
+                });
+
+                // Initialiser le style pour l'option par défaut
+                if (radio.checked) {
+                    option.classList.add('border-primary');
+                }
+
+                // Permettre de cliquer sur toute la zone pour sélectionner l'option
+                option.addEventListener('click', function() {
+                    radio.checked = true;
+
+                    // Déclencher l'événement change pour appliquer le style
+                    const event = new Event('change');
+                    radio.dispatchEvent(event);
+                });
+            });
+
+            // Ajout d'une journalisation pour le formulaire
+            document.getElementById('paymentForm').addEventListener('submit', function(event) {
+                console.log('Formulaire soumis avec commande_id:', document.getElementById('commande_id').value);
+                console.log('Mode de paiement:', document.querySelector('input[name="payment_method"]:checked').value);
+            });
+        });
+    </script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
 </body>

@@ -2,14 +2,20 @@
 
 namespace App\Http\Controllers;
 
+use App\Mail\CommandeExpediee;
+use App\Mail\CommandePayer;
 use App\Mail\ConfirmationCommande;
 use App\Mail\NouvelleCommandeGestionnaire;
+use Barryvdh\DomPDF\Facade\Pdf;
 use App\Models\Commande;
 use App\Models\LivreModel;
 use App\Models\User;
+
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
+
 
 class CommandeController extends Controller
 {
@@ -100,6 +106,66 @@ class CommandeController extends Controller
         return view('commandes.mescommandes', compact('commandes'));
     }
 
+    public function PaiementCommandes(Request $request)
+    {
+        $request->validate([
+            'commande_id' => 'required|exists:commandes,id',
+            'payment_method' => 'required|in:espece,carte',
+        ]);
 
-    //
+        $commande = Commande::findOrFail($request->commande_id);
+
+        // Vérification par email au lieu de user_id
+        if ($commande->email !== auth()->user()->email) {
+            return back()->with('error', 'Cette commande ne vous appartient pas.');
+        }
+
+        if ($commande->statut == 'payee') {
+            return back()->with('error', 'Commande déjà payée.');
+        }
+
+        $commande->update([
+            'statut' => 'payee',
+            'payment_method' => $request->payment_method,
+            'payment_date' => now()
+        ]);
+
+        // Envoi des emails...
+        $admins = User::where('role', 'gestionnaire')->get();
+        foreach ($admins as $admin) {
+            Mail::to($admin->email)->send(new CommandePayer($commande));
+        }
+
+        return redirect()->route('mescommandes')
+            ->with('paiement', 'Paiement effectué avec succès!');
+    }
+    public function expedier($id)
+    {
+        try {
+            $commande = Commande::with('livre')->findOrFail($id);
+
+            // Vérification que la relation livre existe
+            if (!$commande->livre) {
+                return back()->with('error', 'Erreur: Cette commande n\'a pas de livre associé');
+            }
+
+            $pdf = PDF::loadView('pdf.facture', ['commande' => $commande]);
+
+            // Envoi de l'email
+            Mail::to($commande->email)->send(new CommandeExpediee($commande, $pdf));
+
+            // Journalisation
+            Log::info("Commande #{$commande->id} expédiée à {$commande->email}");
+
+            // Mise à jour du statut
+            $commande->update(['statut' => 'expediee']);
+
+            return redirect()
+                ->route('DetailsCommande', $commande->id)
+                ->with('livraison', 'Commande expédiée avec succès');
+        } catch (\Exception $e) {
+            Log::error("Erreur expédition #{$id}: " . $e->getMessage());
+            return back()->with('error', 'Erreur lors de l\'expédition: ' . $e->getMessage());
+        }
+    }
 }
