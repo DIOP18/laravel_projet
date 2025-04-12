@@ -3,6 +3,7 @@
 use App\Http\Controllers\CommandeController;
 use App\Http\Controllers\LivreController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\StatistiquesController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -39,6 +40,7 @@ Route::middleware(['auth', 'role:gestionnaire'])->group(function () {
     Route::get('/DetailsCommande/{id}',[CommandeController::class,'show'])->name('DetailsCommande');
     Route::post('/annuler/{id}',[CommandeController::class,'cancel'])->name('annuler');
     Route::post('/expedier/{id}',[CommandeController::class,'expedier'])->name('expedier');
+    Route::get('/statistique',[StatistiquesController::class,'index'])->name('statistique');
     });
 Route::middleware(['auth', 'role:client'])->group(function () {
     Route::get('/catalogue', [LivreController::class, 'catalogue'])->name('catalogue');

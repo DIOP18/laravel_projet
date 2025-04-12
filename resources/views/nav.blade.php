@@ -29,7 +29,7 @@
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link text-white d-flex align-items-center mx-2 fw-semibold" href="{{ url('') }}">
+                        <a class="nav-link text-white d-flex align-items-center mx-2 fw-semibold" href="{{ url('/statistique') }}">
                             <i class="fas fa-chart-bar me-2"></i> Statistiques et Rapportss
                         </a>
                     </li>
