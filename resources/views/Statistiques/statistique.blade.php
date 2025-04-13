@@ -12,6 +12,13 @@
 <body>
 <div class="container py-4">
     <h1 class="mb-4">Tableau de Bord Statistique</h1>
+    <div class="row mb-4">
+        <div class="col-md-12 text-end">
+            <a href="{{ route('stats-download') }}" class="btn btn-success">
+                <i class="fas fa-file-pdf me-2"></i>Télécharger le PDF
+            </a>
+        </div>
+    </div>
 
     <!-- KPI Cards -->
     <div class="row mb-4">

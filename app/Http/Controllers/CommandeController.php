@@ -154,8 +154,6 @@ class CommandeController extends Controller
             // Envoi de l'email
             Mail::to($commande->email)->send(new CommandeExpediee($commande, $pdf));
 
-            // Journalisation
-            Log::info("Commande #{$commande->id} expédiée à {$commande->email}");
 
             // Mise à jour du statut
             $commande->update(['statut' => 'expediee']);
@@ -164,7 +162,7 @@ class CommandeController extends Controller
                 ->route('DetailsCommande', $commande->id)
                 ->with('livraison', 'Commande expédiée avec succès');
         } catch (\Exception $e) {
-            Log::error("Erreur expédition #{$id}: " . $e->getMessage());
+
             return back()->with('error', 'Erreur lors de l\'expédition: ' . $e->getMessage());
         }
     }

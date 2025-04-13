@@ -41,6 +41,7 @@ Route::middleware(['auth', 'role:gestionnaire'])->group(function () {
     Route::post('/annuler/{id}',[CommandeController::class,'cancel'])->name('annuler');
     Route::post('/expedier/{id}',[CommandeController::class,'expedier'])->name('expedier');
     Route::get('/statistique',[StatistiquesController::class,'index'])->name('statistique');
+    Route::get('/stats-download',[StatistiquesController::class,'downloadPDF'])->name('stats-download');
     });
 Route::middleware(['auth', 'role:client'])->group(function () {
     Route::get('/catalogue', [LivreController::class, 'catalogue'])->name('catalogue');

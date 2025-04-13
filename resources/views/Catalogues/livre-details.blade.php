@@ -9,19 +9,6 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <title>Details Livres</title>
-    <style>
-        .book-card {
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-        }
-        .book-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 20px rgba(0,0,0,0.1) !important;
-        }
-        .pagination {
-            --bs-pagination-active-bg: #0d6efd;
-            --bs-pagination-active-border-color: #0d6efd;
-        }
-    </style>
 </head>
 <body>
 @if(session("error"))
@@ -80,14 +67,18 @@
             <form id="commandeForm" method="POST" action="{{ route('commande') }}">
                 @csrf
                 <input type="hidden" name="livre_id" value="{{ $livre->id }}">
+                <input type="hidden" id="stock_disponible" value="{{ $livre->Stockdisponible }}">
                 <div class="modal-header">
                     <h5 class="modal-title">Commander "{{ $livre->titre }}"</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
                     <div class="mb-3">
-                        <label class="form-label">Quantité</label>
-                        <input type="number" name="quantite" class="form-control" min="1" value="1" required>
+                        <label class="form-label">Quantité (Stock disponible: {{ $livre->Stockdisponible}})</label>
+                        <input type="number" name="quantite" id="quantiteInput" class="form-control" min="1" value="1" required>
+                        <div id="stockError" class="invalid-feedback d-none">
+                            Le stock disponible est insuffisant
+                        </div>
                     </div>
                     <div class="mb-3">
                         <label class="form-label">Votre email</label>
@@ -96,7 +87,7 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
-                    <button type="submit" class="btn btn-primary">Confirmer la commande</button>
+                    <button type="submit" id="submitBtn" class="btn btn-primary">Confirmer la commande</button>
                 </div>
             </form>
         </div>
@@ -106,12 +97,54 @@
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         const commanderBtn = document.querySelector('.commander-btn');
-        commanderBtn.addEventListener('click', function() {
-            const modal = new bootstrap.Modal(document.getElementById('commandeModal'));
-            modal.show();
-        });
+        if (commanderBtn) {
+            commanderBtn.addEventListener('click', function() {
+                const modal = new bootstrap.Modal(document.getElementById('commandeModal'));
+                modal.show();
+            });
+        }
+
+        // Vérification du stock
+        const quantiteInput = document.getElementById('quantiteInput');
+        const stockDisponible = document.getElementById('stock_disponible').value;
+        const stockError = document.getElementById('stockError');
+        const submitBtn = document.getElementById('submitBtn');
+        const commandeForm = document.getElementById('commandeForm');
+
+        if (quantiteInput) {
+            quantiteInput.addEventListener('change', function() {
+                if (parseInt(this.value) > parseInt(stockDisponible)) {
+                    this.classList.add('is-invalid');
+                    stockError.classList.remove('d-none');
+                    submitBtn.disabled = true;
+                } else {
+                    this.classList.remove('is-invalid');
+                    stockError.classList.add('d-none');
+                    submitBtn.disabled = false;
+                }
+            });
+
+            // Validation avant soumission
+            commandeForm.addEventListener('submit', function(e) {
+                if (parseInt(quantiteInput.value) > parseInt(stockDisponible)) {
+                    e.preventDefault();
+                    quantiteInput.classList.add('is-invalid');
+                    stockError.classList.remove('d-none');
+                    submitBtn.disabled = true;
+
+                    // Afficher une alerte Bootstrap
+                    const alertDiv = document.createElement('div');
+                    alertDiv.className = 'alert alert-danger mt-3';
+                    alertDiv.textContent = 'La quantité demandée dépasse le stock disponible';
+                    document.querySelector('.modal-body').appendChild(alertDiv);
+
+                    setTimeout(() => alertDiv.remove(), 3000);
+                }
+            });
+        }
     });
 </script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
 </body>

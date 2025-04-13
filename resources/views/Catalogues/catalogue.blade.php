@@ -114,9 +114,7 @@
                                 <a href="{{ route('showDetails', $livre->id) }}" class="btn btn-outline-primary">
                                     <i class="fas fa-eye me-1"></i> Voir les détails
                                 </a>
-                                <button class="btn btn-success commander-btn" data-livre-id="{{ $livre->id }}">
-                                    <i class="fas fa-shopping-cart me-1"></i> Ajouter au panier
-                                </button>
+
                             </div>
                         </div>
                     </div>
