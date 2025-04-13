@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Http\Controllers;
 
 use App\Models\Commande;
@@ -11,6 +12,7 @@ class StatistiquesController extends Controller
     {
         // Date du jour
         $today = Carbon::today();
+        $firstDayOfMonth = Carbon::now()->firstOfMonth();
 
         // 1. Commandes en cours de la journée
         $commandesEnCours = Commande::where('statut', 'en_attente')
@@ -27,69 +29,69 @@ class StatistiquesController extends Controller
             ->whereDate('created_at', $today)
             ->sum('total');
 
-        // 4. Nombre de commandes par mois (pour l'année en cours)
-        $commandesParMois = DB::table('commandes')
-            ->select(
-                DB::raw('MONTH(created_at) as mois'),
-                DB::raw('COUNT(*) as nombre')
-            )
-            ->whereYear('created_at', date('Y'))
-            ->groupBy('mois')
+        // 4. Recettes mensuelles
+        $recettesMensuelles = Commande::where('statut', 'payee')
+            ->whereDate('created_at', '>=', $firstDayOfMonth)
+            ->sum('total');
+
+        // 5. Nombre de commandes par mois (pour les 6 derniers mois)
+        $sixMonthsAgo = Carbon::now()->subMonths(6);
+
+        $commandesParMois = Commande::select(
+            DB::raw('MONTH(created_at) as mois'),
+            DB::raw('YEAR(created_at) as annee'),
+            DB::raw('COUNT(*) as nombre')
+        )
+            ->whereDate('created_at', '>=', $sixMonthsAgo)
+            ->groupBy('annee', 'mois')
+            ->orderBy('annee')
             ->orderBy('mois')
             ->get();
 
+        // Préparation des données pour le graphique
         $moisLabels = [];
-        $commandesData = array_fill(1, 12, 0);
+        $commandesData = [];
 
-        // Remplir avec les données réelles
-        foreach ($commandesParMois as $data) {
-            $mois = $data->mois;
-            $commandesData[$mois] = $data->nombre;
-            $moisLabels[$mois] = Carbon::create()->month($mois)->locale('fr_FR')->monthName;
+        for ($i = 5; $i >= 0; $i--) {
+            $date = Carbon::now()->subMonths($i);
+            $moisKey = $date->format('Y-m');
+            $moisLabels[] = $date->locale('fr_FR')->monthName . ' ' . $date->year;
+
+            $trouve = $commandesParMois->first(function ($item) use ($date) {
+                return $item->mois == $date->month && $item->annee == $date->year;
+            });
+
+            $commandesData[] = $trouve ? $trouve->nombre : 0;
         }
 
-        // 5. Nombre de livres vendus par catégorie par mois
+        // 6. Commandes par statut (pour le pie chart)
         $livresParCategorie = DB::table('commandes')
             ->join('livre_models', 'commandes.livre_id', '=', 'livre_models.id')
             ->select(
                 'livre_models.categorie',
-                DB::raw('MONTH(commandes.created_at) as mois'),
-                DB::raw('SUM(commandes.quantite) as quantite')
+                DB::raw('COALESCE(SUM(commandes.quantite), 0) as total_livres')
             )
-            ->where('commandes.statut', 'payee')
-            ->whereYear('commandes.created_at', date('Y'))
-            ->groupBy('livre_models.categorie', 'mois')
-            ->orderBy('mois')
+            ->where('commandes.statut', 'expediee')
+            ->groupBy('livre_models.categorie')
+            ->orderBy('total_livres', 'DESC')
             ->get();
 
-        // Récupérer toutes les catégories distinctes
-        $categories = DB::table('livre_models')
-            ->select('categorie')
-            ->distinct()
-            ->pluck('categorie')
-            ->toArray();
-
-        // Initialiser les données
-        $ventesParCategorie = [];
-        foreach ($categories as $categorie) {
-            $ventesParCategorie[$categorie] = array_fill(1, 12, 0);
+        // Ajoutez des données par défaut si vide
+        if ($livresParCategorie->isEmpty()) {
+            $livresParCategorie = collect([
+                (object)['categorie' => 'Aucune donnée', 'total_livres' => 1]
+            ]);
         }
 
-        // Remplir avec les données réelles
-        foreach ($livresParCategorie as $data) {
-            $categorie = $data->categorie;
-            $mois = $data->mois;
-            $ventesParCategorie[$categorie][$mois] = $data->quantite;
-        }
 
         return view('Statistiques.statistique', compact(
             'commandesEnCours',
             'commandesValidees',
             'recettesJournalieres',
+            'recettesMensuelles',
             'moisLabels',
             'commandesData',
-            'categories',
-            'ventesParCategorie'
+            'livresParCategorie'
         ));
     }
 }

@@ -126,7 +126,7 @@
                                         match($commande->statut) {
                                             'payee' => 'success',
                                             'annulee' => 'danger',
-                                            'expedie'=>'success',
+                                            'expedie'=>'primary',
                                             default => 'warning'
                                         }
                                     }}">

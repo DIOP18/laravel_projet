@@ -45,7 +45,7 @@ Route::middleware(['auth', 'role:gestionnaire'])->group(function () {
 Route::middleware(['auth', 'role:client'])->group(function () {
     Route::get('/catalogue', [LivreController::class, 'catalogue'])->name('catalogue');
     Route::get('/showDetails/{id}', [LivreController::class, 'showDetails'])->name('showDetails');
-    Route::post('/commande', [\App\Http\Controllers\CommandeController::class, 'store'])->name('commande');
+    Route::post('/commande', [CommandeController::class, 'store'])->name('commande');
     Route::get('/mescommandes', [CommandeController::class, 'mesCommandes'])->name('mescommandes');
     Route::post('/paymentMethod', [CommandeController::class, 'PaiementCommandes'])->name('paymentMethod');
 });
