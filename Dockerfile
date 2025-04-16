@@ -1,55 +1,54 @@
 FROM php:8.2-fpm
 
-# Arguments définis dans docker-compose.yml
-ARG user
-ARG uid
-
 # Installer les dépendances
 RUN apt-get update && apt-get install -y \
     git \
     curl \
-    libpng-dev \
-    libonig-dev \
-    libxml2-dev \
     zip \
     unzip \
-    libzip-dev
-
-# Nettoyer le cache
-RUN apt-get clean && rm -rf /var/lib/apt/lists/*
+    libpng-dev \
+    libonig-dev \
+    libxml2-dev
 
 # Installer les extensions PHP
-RUN docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd zip
+RUN docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd
 
 # Installer Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
-# Créer un utilisateur système pour exécuter Composer et Artisan
-RUN useradd -G www-data,root -u $uid -d /home/$user $user
-RUN mkdir -p /home/$user/.composer && \
-    chown -R $user:$user /home/$user
-
 # Définir le répertoire de travail
-WORKDIR /var/www
+WORKDIR /var/www/html
 
-# Copier les fichiers du projet
-COPY . /var/www/
-
-# Copier les autorisations correctes
-COPY --chown=$user:$user . /var/www/
+# Copier d'abord composer.json et composer.lock
+COPY composer.json composer.lock ./
 
 # Installer les dépendances
-RUN composer install --no-interaction --no-dev --optimize-autoloader
+RUN composer install --no-scripts --no-autoloader --no-dev
 
-# Changer le propriétaire du répertoire storage
-RUN chown -R $user:$user \
-    /var/www/storage \
-    /var/www/bootstrap/cache
+# Copier le reste des fichiers du projet (sauf ceux dans .dockerignore)
+COPY . .
 
-# Basculer vers l'utilisateur non root
-USER $user
+# Générer l'autoloader optimisé
+RUN composer dump-autoload --optimize
 
-# Exposer le port 9000
+# S'assurer que le symlink problématique n'existe pas
+RUN rm -rf public/storage || true
+
+# Créer les dossiers nécessaires pour storage
+RUN mkdir -p storage/app/public \
+    storage/framework/cache \
+    storage/framework/sessions \
+    storage/framework/views \
+    storage/logs \
+    bootstrap/cache
+
+# Créer un nouveau symlink propre à l'intérieur du conteneur
+RUN ln -s ../storage/app/public public/storage
+
+# Définir les permissions
+RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
+
+# Exposer le port PHP-FPM
 EXPOSE 9000
 
 CMD ["php-fpm"]
